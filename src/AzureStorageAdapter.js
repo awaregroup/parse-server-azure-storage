@@ -60,12 +60,12 @@ export class AzureStorageAdapter {
   deleteFile(filename) {
     return new Promise((resolve, reject) => {
       this._client.deleteBlob(this._container, filename, (err, res) => {
-          if (err) {
-            return reject(err);
-          }
+        if (err) {
+          return reject(err);
+        }
 
-          resolve(res);
-        });
+        resolve(res);
+      });
     });
   }
 
@@ -77,13 +77,17 @@ export class AzureStorageAdapter {
    */
   getFileData(filename) {
     return new Promise((resolve, reject) => {
-      this._client.getBlobToText(this._container, filename, (err, text, blob, res) => {
+      this._client.createReadStream(this._container, filename, (err) => {
         if (err) {
           return reject(err);
         }
-
-        resolve(new Buffer(text));
-      });
+      })
+        .on('error', function (err) {
+          reject(err);
+        })
+        .on('data', function (buffer) {
+          resolve(buffer);
+        });
     });
   }
 
